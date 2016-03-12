@@ -1,0 +1,41 @@
+---
+- hosts: all
+  connection: local
+  become: yes
+  vars:
+    ansible_python_interpreter: "/usr/local/bin/python2"
+  tasks:
+    - name: link python2 to python cuz unarchive sucks
+      file: path=/usr/local/bin/python src=/usr/local/bin/python2 state=link
+
+    - name: make jail dataset
+      file: path=/usr/local/jail/testjail state=directory
+
+    - name: untar base
+      unarchive:
+        src: /vagrant/base.txz
+        dest: /usr/local/jail/testjail
+        creates: /usr/local/jail/testjail/etc
+        copy: no
+
+    - name: set up jail
+      jail: 
+        name: 'testjail1'
+        path: '/usr/local/jail/testjail1'
+        ip4_addr: '10.0.16.34'
+        interface: 'em1'
+
+    - name: set up jail
+      jail: 
+        name: 'testjail2'
+        path: '/usr/local/jail/testjail2'
+        ip4_addr: '10.0.16.34'
+        interface: 'em1'
+        other_config: '{"allow.raw_sockets": False}'
+
+    - name: set up jail
+      jail: 
+        name: 'testjail3'
+        path: '/usr/local/jail/testjail3'
+        ip4_addr: '10.0.16.34'
+        interface: 'em1'
