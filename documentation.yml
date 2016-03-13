@@ -1,3 +1,87 @@
 ---
 module: jail
-short_description: 
+short_description: manage FreeBSD jail configuration
+description:
+  - Configure FreeBSD jails. This module handles configuration of jails and
+    whether to start jails on boot. Try the M(zfs) or M(unarchive) modules for
+    creating the jail filesystems and the M(service) module for starting and
+    stopping jails.
+version_added: null
+author: 'Benjamin Wilson, @brwilson'
+options:
+  name:
+    description: The name of the jail.
+    required: True
+  path:
+    description: The path to the root of the jail filesystem.
+    required: True
+  ip4_addr:
+    description: IPv4 address to assign to the jail.
+    required: False
+  interface:
+    description: The host interface to attach jail IP to.
+    required: False
+  host_hostname:
+    description: The hostname of the jail.
+    required: False
+    default: "The jail's name"
+  exec_start:
+    description: Command to run to start jail.
+    required: False
+    default: '/bin/sh /etc/rc'
+  exec_stop:
+    description: Command to run to shut down jail.
+    required: False
+    default: '/bin/sh /etc/rc.shutdown'
+  securelevel:
+    description: 'securelevel to run jail at'
+    required: False
+    default: 3
+    choices: [-1, 0, 1, 2, 3]
+  mount_devfs:
+    description: Mount a devfs filesystem for the jail.
+    required: False
+    default: yes
+    choices: ['yes', 'no']
+  other_config:
+    description: >
+      A dictionary of additional settings to include in the jail configuration.
+      If the setting doesn't have a value but is either present or absent (such
+      as the 'persist' or 'nomount.procfs'), set the value in the dict to
+      I(True).
+    required: False
+  conf_file:
+    description: file to write jail configuration to
+    required: False
+    default: '/etc/jail.conf'
+  enabled:
+    description: Whether the jail should be started when the host boots.
+    required: False
+    default: True
+    choices: ['yes', 'no']
+  state:
+    description: >
+      Whether the jail should be present or absent. Only jails created by this
+      module will be removed.
+    required: False
+    default: 'present'
+    choices: ['present', 'absent']
+
+---
+- name: configure a basic jail
+  jail: name=basicjail path=/usr/local/jail/basicjail
+
+- name: set up a jail with an IP address
+  jail:
+    name: networkjail
+    path: /usr/local/jail/basicjail
+    ip4_addr: 192.168.1.11
+    interface: ix0
+
+- name: set up a jail with additional configuration options
+  jail:
+    name: fancyjail
+    path: /usr/local/jail/fancyjail
+    ip4_addr: 10.1.0.124
+    ip4_addr: en0
+    other_config: '{"persist": True, "devfs_ruleset": 3}'

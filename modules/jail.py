@@ -272,6 +272,9 @@ def main():
         supports_check_mode=False
     )
 
+    # TODO
+    # make ipv4_addr and interface require the other if one is provided
+
     if module.params['host_hostname'] is None:
         module.params['host_hostname'] == module.params['name']
 
