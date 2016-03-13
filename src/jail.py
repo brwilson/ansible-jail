@@ -8,8 +8,6 @@ DOCUMENTATION = """
 EXAMPLES = """
 """
 
-RETURN = """
-"""
 
 import re
 

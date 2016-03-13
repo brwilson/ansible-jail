@@ -1,0 +1,12 @@
+---
+- hosts: all
+  connection: local
+  vars:
+    ansible_python_interpreter: "/usr/local/bin/python2"
+  tasks:
+    - name: set up jail
+      jail: 
+        name: 'testjail1'
+        path: '/usr/local/jail/testjail1'
+        ip4_addr: '10.0.16.34'
+        interface: 'em1'

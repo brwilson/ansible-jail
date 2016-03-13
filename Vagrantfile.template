@@ -1,0 +1,21 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure(2) do |config|
+  config.vm.define "jailmodtest" do |jailmodtest|
+    jailmodtest.vm.box = "freebsd/FreeBSD-10.2-RELEASE"
+    jailmodtest.vm.hostname = "jailmodtest"
+    jailmodtest.vm.network "private_network", type: "dhcp", auto_config: false
+    jailmodtest.ssh.shell = "/bin/sh"
+    jailmodtest.vm.base_mac = "_MACADDR_"
+    jailmodtest.vm.synced_folder ".", "/vagrant", type: "nfs"
+    jailmodtest.vm.provision "shell", inline: <<-SHELL
+      pkg install -y python2 vim-lite ansible sudo bash > /dev/null 2>&1
+      ln -sf /usr/local/bin/bash /bin/bash > /dev/null 2>&1
+      chpass -s /usr/local/bin/bash vagrant > /dev/null 2>&1
+      cd /vagrant && ansible-playbook -i ./inventory -M ./modules playbook.yml > ansible_out.txt 2>&1
+      cp /etc/jail.conf /vagrant/jail.conf
+      cp /etc/rc.conf /vagrant/rc.conf
+    SHELL
+  end
+end

@@ -51,7 +51,7 @@ options:
       I(True).
     required: False
   conf_file:
-    description: file to write jail configuration to
+    description: File to write jail configuration to.
     required: False
     default: '/etc/jail.conf'
   enabled:
@@ -66,22 +66,3 @@ options:
     required: False
     default: 'present'
     choices: ['present', 'absent']
-
----
-- name: configure a basic jail
-  jail: name=basicjail path=/usr/local/jail/basicjail
-
-- name: set up a jail with an IP address
-  jail:
-    name: networkjail
-    path: /usr/local/jail/basicjail
-    ip4_addr: 192.168.1.11
-    interface: ix0
-
-- name: set up a jail with additional configuration options
-  jail:
-    name: fancyjail
-    path: /usr/local/jail/fancyjail
-    ip4_addr: 10.1.0.124
-    ip4_addr: en0
-    other_config: '{"persist": True, "devfs_ruleset": 3}'
