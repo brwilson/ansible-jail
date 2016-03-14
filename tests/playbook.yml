@@ -1,8 +1,5 @@
 ---
 - hosts: all
-  connection: local
-  vars:
-    ansible_python_interpreter: "/usr/local/bin/python2"
   tasks:
     - name: set up jail
       jail: 
