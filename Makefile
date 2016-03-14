@@ -38,7 +38,7 @@ $(vagrant_dirs):
 
 # Ansible Documentation
 viewdocs: ansible/docsite/htmlout
-	open http://localhost:8000
+	open http://localhost:8000/jail_module.html
 	cd ansible/docsite/htmlout && python -m SimpleHTTPServer
 
 builddocs: ansible/docsite/htmlout
@@ -66,3 +66,5 @@ help:
 	@echo ''
 	@echo 'all (default):  insert documentation strings into jail.py'
 	@echo 'test:           run vagrant tests'
+	@echo 'builddocs:      build ansible documentation including the jail docs'
+	@echo 'viewdocs:       view the documentation in your default browser'
