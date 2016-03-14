@@ -1,2 +1,5 @@
 base.txz
 .vagrant
+/jail.py
+/tmp
+/ansible

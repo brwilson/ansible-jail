@@ -1,4 +1,3 @@
----
 - name: configure a basic jail
   jail: name=basicjail path=/usr/local/jail/basicjail
 

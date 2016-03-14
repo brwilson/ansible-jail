@@ -44,11 +44,11 @@ options:
     default: yes
     choices: ['yes', 'no']
   other_config:
-    description: >
-      A dictionary of additional settings to include in the jail configuration.
-      If the setting doesn't have a value but is either present or absent (such
-      as the 'persist' or 'nomount.procfs'), set the value in the dict to
-      I(True).
+    description:
+      - A dictionary of additional settings to include in the jail configuration.
+        If the setting doesn't have a value but is either present or absent (such
+        as the 'persist' or 'nomount.procfs'), set the value in the dict to
+        I(True).
     required: False
   conf_file:
     description: File to write jail configuration to.
@@ -60,9 +60,9 @@ options:
     default: True
     choices: ['yes', 'no']
   state:
-    description: >
-      Whether the jail should be present or absent. Only jails created by this
-      module will be removed.
+    description:
+      - Whether the jail should be present or absent. Only jails created by this
+        module will be removed.
     required: False
     default: 'present'
     choices: ['present', 'absent']

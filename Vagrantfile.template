@@ -13,7 +13,7 @@ Vagrant.configure(2) do |config|
       pkg install -y python2 vim-lite ansible sudo bash > /dev/null 2>&1
       ln -sf /usr/local/bin/bash /bin/bash > /dev/null 2>&1
       chpass -s /usr/local/bin/bash vagrant > /dev/null 2>&1
-      cd /vagrant && ansible-playbook -i ./inventory -M ./modules playbook.yml > ansible_out.txt 2>&1
+      cd /vagrant && ansible-playbook -i localhost, -M ./modules playbook.yml > ansible_out.txt 2>&1
       cp /etc/jail.conf /vagrant/jail.conf
       cp /etc/rc.conf /vagrant/rc.conf
     SHELL
