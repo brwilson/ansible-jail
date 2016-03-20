@@ -15,6 +15,9 @@ jail.py: docs/documentation.yml docs/examples.yml
 	sed '/DOCUMENTATION = """/ r docs/documentation.yml' src/jail.py > jail.py
 	sed -i '' '/EXAMPLES = """/ r docs/examples.yml' jail.py
 
+# Unit Tests
+unittest:
+	cd src && python -m unittest jail_tests
 
 # Jail Module Testing
 test: $(ansible_out)
@@ -60,6 +63,7 @@ clean:
 	rm -rf tmp
 	rm -rf ansible
 	rm -f jail.py
+	rm -f src/*.pyc
 
 help:
 	@echo 'Targets:'

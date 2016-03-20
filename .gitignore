@@ -3,3 +3,4 @@ base.txz
 /jail.py
 /tmp
 /ansible
+*.pyc
