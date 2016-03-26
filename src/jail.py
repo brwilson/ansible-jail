@@ -104,7 +104,7 @@ def test_jail_conf(module):
         return False
 
 
-def set_jail_conf(module):
+def write_jail_conf(module):
     """Set configuration for a jail.
 
     Args:
@@ -284,7 +284,7 @@ def main():
     # Update config file
     if not test_jail_conf(module):
         result['changed'] = True
-        set_jail_conf(module)
+        write_jail_conf(module)
 
     # Set which jails are started at boot
     if module.params['name'] in get_rc_jail_list(module):
