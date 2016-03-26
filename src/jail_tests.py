@@ -3,6 +3,8 @@ from mock import mock_open, patch
 import jail
 import __builtin__
 
+# TODO: add test for when /etc/rc.conf, /etc/jail.conf don't exist
+
 
 class ModuleTestTemplate(unittest.TestCase):
     class AnsibleModule(object):

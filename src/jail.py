@@ -56,8 +56,11 @@ def get_jail_conf(module):
         list of lines comprising the current jail configuration, including
         the AnsibleJailBegin/End delimiters
     """
-    with open(module.params['conf_file'], 'r') as f:
-        config = f.readlines()
+    try:
+        with open(module.params['conf_file'], 'r') as f:
+            config = f.readlines()
+    except IOError:
+        config = []
 
     jail_config = []
     in_jail_config = False
@@ -114,8 +117,11 @@ def write_jail_conf(module):
         None
     """
 
-    with open(module.params['conf_file'], 'r') as f:
-        all_conf = f.readlines()
+    try:
+        with open(module.params['conf_file'], 'r') as f:
+            all_conf = f.readlines()
+    except IOError:
+        all_conf = []
 
     jail_conf = get_jail_conf(module)
     if jail_conf:
