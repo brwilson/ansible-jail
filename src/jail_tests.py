@@ -254,7 +254,7 @@ testjail1 {
 
         m_open().writelines.assert_called_once_with(desired_config)
 
-    def test_adding_new(self):
+    def test_editing_existing(self):
         module = self.AnsibleModule(name='testjail2', path='/usr/local/jail/testjail2',
                                     ip4_addr='10.0.0.2', interface='lo1')
         jail_config = '''#AnsibleJailBegin:testjail1
