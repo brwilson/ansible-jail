@@ -21,32 +21,25 @@ def generate_jail_conf(module):
     Returns:
         list of lines comprising the jail's config stanza
     """
+    params = {
+        'path': module.params['path'],
+        'ip4.addr': module.params['ip4_addr'],
+        'interface': module.params['interface'],
+        'host.hostname': module.params['host_hostname'],
+        'exec.start': module.params['exec_start'],
+        'exec.stop': module.params['exec_stop'],
+        'securelevel': module.params['securelevel'],
+        'mount.devfs': module.params['mount_devfs']
+    }
+    params.update(module.params['other_config'])
+
     config = []
     config.append('#AnsibleJailBegin:{}\n'.format(module.params['name']))
     config.append('{} {{\n'.format(module.params['name']))
 
-    # Configurable params
-    config.append('    "path" = "{}";\n'.format(module.params['path']))
-    if module.params['ip4_addr']:
-        config.append('    "ip4.addr" = "{}";\n'.format(module.params['ip4_addr']))
-    if module.params['interface']:
-        config.append('    "interface" = "{}";\n'.format(module.params['interface']))
-    config.append('    "host.hostname" = "{}";\n'.format(module.params['host_hostname']))
-    config.append('    "exec.start" = "{}";\n'.format(module.params['exec_start']))
-    config.append('    "exec.stop" = "{}";\n'.format(module.params['exec_stop']))
-    config.append('    "securelevel" = "{}";\n'.format(module.params['securelevel']))
-    if module.params['mount_devfs']:
-        config.append('    "mount.devfs";\n')
-
-    for key, value in module.params['other_config'].iteritems():
-        # jail.conf doesn't do "value = boolean"; rather, boolean settings are
-        # included if true and left out if not.
-        if value is True:
-            config.append('    "{key}";\n'.format(key=key))
-        elif value is False:
-            pass
-        else:
-            config.append('    "{key}" = "{value}";\n'.format(key=key, value=value))
+    for key in sorted(params.keys()):
+        if params[key] is not None:
+            config.append('    "{key}" = "{value}";\n'.format(key=key, value=params[key]))
 
     config.append('}\n')
     config.append('#AnsibleJailEnd:{}\n'.format(module.params['name']))
