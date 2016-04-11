@@ -1,8 +1,10 @@
 import unittest
+import sys
 from mock import mock_open, patch
-import jail
 import __builtin__
 
+sys.path.insert(0, '../src')
+import jail
 # TODO: add test for when /etc/rc.conf, /etc/jail.conf don't exist
 
 

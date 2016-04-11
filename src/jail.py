@@ -202,34 +202,33 @@ def remove_rc_jail_list(module):
     except ValueError:
         msg = ("Unable to remove jail from jail_list in rc files becuase it's "
                "already absent. Is jail_list defined somewhere other than "
-               "/etc/rc.conf?")
+               "the rc file you specified?")
         module.fail_json(msg=msg)
 
     write_rc_jail_list(module, jail_list)
 
 
-# TODO: make this work when stuff is defined somewhere other than /etc/rc.conf
 def write_rc_jail_list(module, jail_list):
-    """Modify the jail_list variable in /etc/rc.conf
+    """Modify the jail_list variable in the specified rc file.
 
     Args:
         module (AnsibleModule): the module object
-        jail_list (list): names of jails to set jail_list to in /etc/rc.conf
+        jail_list (list): names of jails to set jail_list to
     Returns:
         None
     """
 
     try:
-        with open('/etc/rc.conf') as f:
+        with open(module.params['rc_file']) as f:
             rc_conf = f.readlines()
     except IOError:
-        msg = "Unable to open /etc/rc.conf for reading."
+        msg = "Unable to open {} for reading.".format(module.params['rc_file'])
         module.fail_json(msg=msg)
 
     new_rc_conf = []
     new_jail_list = 'jail_list="{}"\n'.format(' '.join(jail_list))
 
-    # loop through lines in /etc/rc.conf and replace the jail_list variable
+    # loop through lines in rc_file and replace the jail_list variable
     # with our own, appending it to the end if it doesn't exist already
     found_jail_list = False
     for line in rc_conf:
@@ -242,10 +241,10 @@ def write_rc_jail_list(module, jail_list):
         new_rc_conf.append(new_jail_list)
 
     try:
-        with open('/etc/rc.conf', 'w') as f:
+        with open(module.params['rc_file'], 'w') as f:
             f.writelines(new_rc_conf)
     except IOError:
-        msg = "Unable to open /etc/rc.conf for writing."
+        msg = "Unable to open {} for writing.".format(module.params['rc_file'])
         module.fail_json(msg=msg)
 
 
@@ -263,6 +262,7 @@ def main():
             mount_devfs=dict(default=True, type='bool'),
             other_config=dict(default={}, type='dict'),
             conf_file=dict(default='/etc/jail.conf', type='str'),
+            rc_file=dict(default='/etc/rc.conf', type='str'),
             enabled=dict(default=True, type='bool'),
             state=dict(default='present', type='str', choices=['present', 'absent'])
         ),

@@ -5,8 +5,9 @@ jail.py: docs/documentation.yml docs/examples.yml
 	sed -i '' '/EXAMPLES = """/ r docs/examples.yml' jail.py
 
 unittest:
-	cd src && python2 -m unittest jail_tests
+	cd tests && python2 -m unittest jail_tests
 
 clean:
 	rm -f jail.py
 	rm -f src/*.pyc
+	rm -f tests/*.pyc
