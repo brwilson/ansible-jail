@@ -59,8 +59,12 @@ def get_jail_conf(module):
     try:
         with open(module.params['conf_file'], 'r') as f:
             config = f.readlines()
-    except IOError:
-        config = []
+    except IOError as e:
+        # errno 2 = file doesn't exist
+        if e.errno == 2:
+            config = []
+        else:
+            raise
 
     jail_config = []
     in_jail_config = False
@@ -120,8 +124,12 @@ def write_jail_conf(module):
     try:
         with open(module.params['conf_file'], 'r') as f:
             all_conf = f.readlines()
-    except IOError:
-        all_conf = []
+    except IOError as e:
+        # errno 2 = file doesn't exist
+        if e.errno == 2:
+            all_conf = []
+        else:
+            raise
 
     jail_conf = get_jail_conf(module)
     if jail_conf:
@@ -131,8 +139,12 @@ def write_jail_conf(module):
     else:
         all_conf.extend(generate_jail_conf(module))
 
-    with open(module.params['conf_file'], 'w') as f:
-        f.writelines(all_conf)
+    try:
+        with open(module.params['conf_file'], 'w') as f:
+            f.writelines(all_conf)
+    except IOError:
+        msg = "Unable to open {} for writing.".format(module.params['rc_file'])
+        module.fail_json(msg=msg)
 
 
 def get_rc_jail_enable(module):
@@ -219,11 +231,16 @@ def write_rc_jail_list(module, jail_list):
     """
 
     try:
-        with open(module.params['rc_file']) as f:
+        with open(module.params['rc_file'], 'r') as f:
+            rc_conf = []
             rc_conf = f.readlines()
-    except IOError:
-        msg = "Unable to open {} for reading.".format(module.params['rc_file'])
-        module.fail_json(msg=msg)
+    except IOError as e:
+        # errno 2 = file doesn't exist
+        if e.errno == 2:
+            rc_conf = []
+        else:
+            msg = "Unable to open {} for reading.".format(module.params['rc_file'])
+            module.fail_json(msg=msg)
 
     new_rc_conf = []
     new_jail_list = 'jail_list="{}"\n'.format(' '.join(jail_list))
@@ -280,12 +297,20 @@ def main():
 
     result = {'changed': False}
 
-    # Make jail config file and any required directories if they don't exist
-    if not os.path.exists(module.params['conf_file']):
-        if not os.path.exists(os.path.dirname(module.params['conf_file'])):
-            os.makedirs(os.path.dirname(module.params['conf_file']))
-        open(module.params['conf_file'], 'a').close()
-        result['changed'] = True
+    # Make any required directories if they don't exist
+    dirpaths = [
+        os.path.dirname(module.params['conf_file']),
+        os.path.dirname(module.params['rc_file'])
+    ]
+
+    for d in dirpaths:
+        try:
+            if not os.path.exists(d):
+                os.makedirs(d)
+                result['changed'] = True
+        except IOError:
+            msg = "Unable to create {}.".format(d)
+            module.fail_json(msg=msg)
 
     # Update config file
     if not test_jail_conf(module):

@@ -14,8 +14,8 @@ class ModuleTestTemplate(unittest.TestCase):
                      host_hostname=None, exec_start='/bin/sh /etc/rc',
                      exec_stop='/bin/sh /etc/rc.shutdown', securelevel=3,
                      mount_devfs=True, other_config={},
-                     conf_file='/etc/jail.conf', enabled=True,
-                     state='present'):
+                     conf_file='/etc/jail.conf', rc_file='/etc/rc.conf',
+                     enabled=True, state='present'):
             if host_hostname is None:
                 host_hostname = name
             self.params = {
@@ -30,6 +30,7 @@ class ModuleTestTemplate(unittest.TestCase):
                 'mount_devfs': mount_devfs,
                 'other_config': other_config,
                 'conf_file': conf_file,
+                'rc_file': rc_file,
                 'enabled': enabled,
                 'state': state
             }
@@ -321,3 +322,23 @@ testjail1 {
             jail.write_jail_conf(module)
 
         m_open().writelines.assert_called_once_with(desired_config)
+
+class TestChangeRCConfig(ModuleTestTemplate):
+    def test_write_rc_nofile(self):
+        start_rcconf = '''hostname="test"
+'''
+        end_rcconf = [
+            'hostname="test"\n',
+            'jail_list="testjail1"\n'
+        ]
+        module = self.AnsibleModule(name='testjail1', path='/usr/local/jail/testjail1')
+        with patch.object(__builtin__, 'open', mock_open(read_data=start_rcconf)) as m_open:
+            jail.write_rc_jail_list(module, ['testjail1'])
+        m_open().writelines.assert_called_once_with(end_rcconf)
+
+
+
+
+
+
+

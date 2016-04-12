@@ -4,8 +4,11 @@ jail.py: docs/documentation.yml docs/examples.yml
 	sed '/DOCUMENTATION = """/ r docs/documentation.yml' src/jail.py > jail.py
 	sed -i '' '/EXAMPLES = """/ r docs/examples.yml' jail.py
 
-unittest:
+test:
 	cd tests && python2 -m unittest jail_tests
+
+pbtest:
+	cd tests && ansible-playbook -M ../src test_playbook.yml -vvv
 
 clean:
 	rm -f jail.py

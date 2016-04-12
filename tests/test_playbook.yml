@@ -1,44 +1,40 @@
 ---
 - hosts: 127.0.0.1
+  become: true
   connection: local
   vars:
-    rc_conf: '/etc/rc.conf.d/ansible-jail_rc.conf'
-    jail_conf: '/usr/local/ansible-jail_jail.conf'
+    rc_conf: '/etc/rc.conf.d/93842839-ansible-jail_rc.conf'
+    jail_conf: '/usr/local/9304673409-ansible-jail_jail.conf'
   tasks:
-    - name: check state of rc file
-      stat:
-        path: '{{ rc_conf }}'
-      register: rc_conf_file
+    - block:
+      - name: add new jail
+        become: false
+        jail: 
+          name: 'testjail99'
+          path: '/usr/local/jail/testjail99'
+          ip4_addr: '192.168.1.232'
+          interface: 'en0'
+          conf_file: '{{ jail_conf }}'
+          rc_file: '{{ rc_conf }}'
+        ignore_errors: true
+        register: new_noperms
 
-    - name: check state of jail file
-      stat:
-        path: '{{ jail_conf }}'
-      register: jail_conf_file
+      - name: check that jail creation failed due to permissions
+        assert:
+          that:
+            - new_noperms.failed
+            - new_noperms.msg == 'Unable to open /etc/rc.conf.d/93842839-ansible-jail_rc.conf for writing.'
 
-    - name: make sure we aren't going to overwrite existing config files
-      assert:
-        that:
-          - not rc_conf_file.stat.exists
-          - not jail_conf_file.stat.exists
+      - name: set starting jail.conf contents
+        copy:
+          src: 'jail.conf.1'
+          dest: '{{ jail_conf }}'
 
-    - name: add new jail
-      jail: 
-        name: 'testjail99'
-        path: '/usr/local/jail/testjail99'
-        ip4_addr: '192.168.1.232'
-        interface: 'en0'
-        conf_file: '{{ jail_conf }}'
-        rc_file: '{{ rc_conf }}'
-
-    - name: set starting jail.conf contents
-      copy:
-        src: 'jail.conf.1'
-        dest: '{{ jail_conf }}'
-
-    - name: clean up files
-      file:
-        path: '{{ item }}'
-        state: 'absent'
-      with_items:
-        - '{{ rc_conf }}'
-        - '{{ jail_conf }}'
+      always:
+      - name: clean up files
+        file:
+          path: '{{ item }}'
+          state: 'absent'
+        with_items:
+          - '{{ rc_conf }}'
+          - '{{ jail_conf }}'
