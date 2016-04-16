@@ -88,11 +88,10 @@ def get_jail_conf(module):
         elif line == jail_end and in_jail_config:
             jail_config.append(line)
             break
-        else:
-            # TODO: this probably can't occur? make more robust
-            fail_msg = ('Error parsing {}! Have the "AnsibleJailBegin/End" '
-                        'comments been altered?')
-            module.fail_json(msg=fail_msg.format(module.params['conf_file']))
+    if jail_config and jail_config[-1] != jail_end:
+        fail_msg = ('Error parsing {}! Have the "AnsibleJailBegin/End" '
+                    'comments been altered?')
+        module.fail_json(msg=fail_msg.format(module.params['conf_file']))
     return jail_config
 
 
