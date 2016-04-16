@@ -6,35 +6,204 @@
     rc_conf: '/etc/rc.conf.d/93842839-ansible-jail_rc.conf'
     jail_conf: '/usr/local/9304673409-ansible-jail_jail.conf'
   tasks:
-    - block:
-      - name: add new jail
-        become: false
-        jail: 
-          name: 'testjail99'
-          path: '/usr/local/jail/testjail99'
-          ip4_addr: '192.168.1.232'
-          interface: 'en0'
-          conf_file: '{{ jail_conf }}'
-          rc_file: '{{ rc_conf }}'
-        ignore_errors: true
-        register: new_noperms
+    - name: setup
+      file:
+        path: '{{ item }}'
+        state: absent
+      with_items:
+        - '{{ jail_conf }}'
+        - '{{ rc_conf }}'
+  
+    - name: add jail without having write perms
+      become: false
+      jail:
+        name: 'testjail99'
+        path: '/usr/local/jail/testjail99'
+        ip4_addr: '192.168.1.232'
+        interface: 'en0'
+        conf_file: '{{ jail_conf }}'
+        rc_file: '{{ rc_conf }}'
+      ignore_errors: true
+      register: new_noperms
+  
+    - name: check that jail creation failed cleanly
+      assert:
+        that:
+          - new_noperms.failed
+          - new_noperms.msg == 'Unable to open /etc/rc.conf.d/93842839-ansible-jail_rc.conf for writing.'
+  
+    - name: cleanup
+      file:
+        path: '{{ item }}'
+        state: absent
+      with_items:
+        - '{{ jail_conf }}'
+        - '{{ rc_conf }}'
 
-      - name: check that jail creation failed due to permissions
-        assert:
-          that:
-            - new_noperms.failed
-            - new_noperms.msg == 'Unable to open /etc/rc.conf.d/93842839-ansible-jail_rc.conf for writing.'
+    ###########################################################################
 
-      - name: set starting jail.conf contents
-        copy:
-          src: 'jail.conf.1'
-          dest: '{{ jail_conf }}'
+    - name: setup
+      file:
+        path: '{{ item }}'
+        state: absent
+      with_items:
+        - '{{ jail_conf }}'
+        - '{{ rc_conf }}'
+  
+    - name: jail.conf file is created when it doesn't exist
+      jail: 
+        name: 'testjail99'
+        path: '/usr/local/jail/testjail99'
+        ip4_addr: '192.168.1.232'
+        interface: 'en0'
+        conf_file: '{{ jail_conf }}'
+        rc_file: '{{ rc_conf }}'
+  
+    - name: get checksum
+      stat:
+        path: '{{ jail_conf }}'
+      register: jail
+  
+    - name: veryify checksum
+      assert:
+        that: jail.stat.md5 == 'ffabd3e28880fe34892b652c799d235a'
+  
+    - name: cleanup
+      file:
+        path: '{{ item }}'
+        state: absent
+      with_items:
+        - '{{ jail_conf }}'
+        - '{{ rc_conf }}'
 
-      always:
-      - name: clean up files
-        file:
-          path: '{{ item }}'
-          state: 'absent'
-        with_items:
-          - '{{ rc_conf }}'
-          - '{{ jail_conf }}'
+    ###########################################################################
+
+    - name: setup
+      copy:
+        src: 'jail.conf.1'
+        dest: '{{ jail_conf }}'
+  
+    - name: new jail is correctly inserted into existing file
+      jail: 
+        name: 'testjail99'
+        path: '/usr/local/jail/testjail99'
+        ip4_addr: '192.168.1.232'
+        interface: 'en0'
+        exec_start: '/usr/local/bin/python2 /usr/local/myapp/app.py'
+        conf_file: '{{ jail_conf }}'
+        rc_file: '{{ rc_conf }}'
+  
+    - name: get checksum
+      stat:
+        path: '{{ jail_conf }}'
+      register: jail
+  
+    - name: veryify checksum
+      assert:
+        that: jail.stat.md5 == '260e81c4e7af821464b5ebdb42a520bc'
+  
+    - name: cleanup
+      file:
+        path: '{{ item }}'
+        state: absent
+      with_items:
+        - '{{ jail_conf }}'
+        - '{{ rc_conf }}'
+
+    ###########################################################################
+
+    - name: setup
+      copy:
+        src: 'jail.conf.2'
+        dest: '{{ jail_conf }}'
+  
+    - name: new jail is correctly inserted into file with other managed jail
+      jail: 
+        name: 'testjail87'
+        path: '/usr/local/jail/testjail87'
+        ip4_addr: '192.168.1.234'
+        interface: 'en0'
+        mount_devfs: 'no'
+        conf_file: '{{ jail_conf }}'
+        rc_file: '{{ rc_conf }}'
+  
+    - name: get checksum
+      stat:
+        path: '{{ jail_conf }}'
+      register: jail
+  
+    - name: veryify checksum
+      assert:
+        that: jail.stat.md5 == '97c35b2d46ee9628dd4a5beabd80d81c'
+  
+    - name: cleanup
+      file:
+        path: '{{ item }}'
+        state: 'absent'
+      with_items:
+        - '{{ rc_conf }}'
+        - '{{ jail_conf }}'
+
+    ###########################################################################
+
+    - name: setup
+      copy:
+        src: 'jail.conf.3'
+        dest: '{{ jail_conf }}'
+
+    - name: existing jail is correctly modified when multiple jails are present
+      jail: 
+        name: 'testjail99'
+        path: '/usr/local/jail/testjail99'
+        ip4_addr: '192.168.1.232'
+        interface: 'en0'
+        exec_start: '/usr/local/bin/python2 /usr/local/myapp/app.py'
+        securelevel: 2
+        conf_file: '{{ jail_conf }}'
+        rc_file: '{{ rc_conf }}'
+
+    - name: get checksum
+      stat:
+        path: '{{ jail_conf }}'
+      register: jail
+  
+    - name: veryify checksum
+      assert:
+        that: jail.stat.md5 == '078387b83fe824a9a5beae946dbc4136'
+
+    - name: cleanup
+      file:
+        path: '{{ item }}'
+        state: 'absent'
+      with_items:
+        - '{{ rc_conf }}'
+        - '{{ jail_conf }}'
+
+    ###########################################################################
+
+    - name: setup
+      copy:
+        src: 'jail.conf.3'
+        dest: '{{ jail_conf }}'
+
+    - name: remove jail when multiple jails are present
+      jail: 
+        name: 'testjail99'
+        path: '/usr/local/jail/testjail99'
+        ip4_addr: '192.168.1.232'
+        interface: 'en0'
+        exec_start: '/usr/local/bin/python2 /usr/local/myapp/app.py'
+        securelevel: 2
+        conf_file: '{{ jail_conf }}'
+        rc_file: '{{ rc_conf }}'
+        state: absent
+
+    - name: get checksum
+      stat:
+        path: '{{ jail_conf }}'
+      register: jail
+  
+    - name: veryify checksum
+      assert:
+        that: jail.stat.md5 == '07838783fe824a9a5beae946dbc4136'
+

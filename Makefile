@@ -8,7 +8,7 @@ test:
 	cd tests && python2 -m unittest jail_tests
 
 pbtest:
-	cd tests && ansible-playbook -M ../src test_playbook.yml -vvv
+	cd tests && ansible-playbook -M ../src test_playbook.yml -vv
 
 clean:
 	rm -f jail.py
