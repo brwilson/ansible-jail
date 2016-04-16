@@ -3,7 +3,7 @@
   become: true
   connection: local
   vars:
-    rc_conf: '/etc/rc.conf.d/93842839-ansible-jail_rc.conf'
+    rc_conf: '/etc/rc.conf.d/7384283903-ansible-jail_rc.conf'
     jail_conf: '/usr/local/9304673409-ansible-jail_jail.conf'
   tasks:
     - name: setup

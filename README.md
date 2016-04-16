@@ -2,16 +2,11 @@
 Ansible module to configure jails
 
 # Tests
-Test playbooks should go in ./tests. The playbook only needs the `hosts` and
-`tasks` section, and hosts should be set to `all`. Running `make test` will
-start a VM for each playbook and save the output of the Ansible run, 
-`/etc/rc.conf`, and `/etc/jail.conf` to `tmp/testname`. 
+Unit tests can be run with `make test`. You'll need the mock module installed.
 
-# To build Ansible docs:
-If you don't have docbook on your computer, you'll need that first.
-    
-    brew install docbook
+The test playbook can be run with `make pbtest`. You'll need Ansible installed,
+of course. The playbook will modify the following files, and should clean up
+after itself if the tests pass. If not, you'll need to delete them manually.
 
-Run `make builddocs` to build docs and `make viewdocs` to build and view the
-documentation for the jail module in your browser. Building the documentation
-takes forever.
+- `/etc/rc.conf.d/7384283903-ansible-jail_rc.conf`
+- `/usr/local/9304673409-ansible-jail_jail.conf`
