@@ -21,6 +21,9 @@ def generate_jail_conf(module):
     Returns:
         list of lines comprising the jail's config stanza
     """
+    if module.params['state'] == 'absent':
+        return []
+
     params = {
         'path': module.params['path'],
         'ip4.addr': module.params['ip4_addr'],
