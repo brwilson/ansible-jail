@@ -24,13 +24,13 @@
         conf_file: '{{ jail_conf }}'
         rc_file: '{{ rc_conf }}'
       ignore_errors: true
-      register: new_noperms
+      register: jail
   
     - name: check that jail creation failed cleanly
       assert:
         that:
-          - new_noperms.failed
-          - new_noperms.msg == 'Unable to open /etc/rc.conf.d/93842839-ansible-jail_rc.conf for writing.'
+          - jail.failed
+          - jail.msg == 'Unable to open /etc/rc.conf.d/7384283903-ansible-jail_rc.conf for writing.'
   
     - name: cleanup
       file:
@@ -205,5 +205,55 @@
   
     - name: veryify checksum
       assert:
-        that: jail.stat.md5 == '07838783fe824a9a5beae946dbc4136'
+        that: jail.stat.md5 == 'c164124b5ea5dc55495887df1893cc51'
+
+    - name: cleanup
+      file:
+        path: '{{ item }}'
+        state: 'absent'
+      with_items:
+        - '{{ rc_conf }}'
+        - '{{ jail_conf }}'
+
+    ###########################################################################
+
+    - name: setup
+      copy:
+        src: 'jail.conf.4'
+        dest: '{{ jail_conf }}'
+
+    - name: 'change jail with missing #AnsibleJailEnd comment'
+      jail: 
+        name: 'testjail99'
+        path: '/usr/local/jail/testjail99'
+        ip4_addr: '192.168.1.232'
+        interface: 'en0'
+        exec_start: '/usr/local/bin/python2 /usr/local/myapp/app.py'
+        securelevel: 2
+        conf_file: '{{ jail_conf }}'
+        rc_file: '{{ rc_conf }}'
+      ignore_errors: yes
+      register: jail
+
+    - name: verify change failed
+      assert:
+        that:
+          - jail.failed
+
+    - name: get checksum
+      stat:
+        path: '{{ jail_conf }}'
+      register: jail
+  
+    - name: veryify checksum
+      assert:
+        that: jail.stat.md5 == 'e1e65a27e659c1d294ac2c8d8a5d54a5'
+
+    - name: cleanup
+      file:
+        path: '{{ item }}'
+        state: 'absent'
+      with_items:
+        - '{{ rc_conf }}'
+        - '{{ jail_conf }}'
 
