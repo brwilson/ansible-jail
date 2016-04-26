@@ -291,8 +291,8 @@ def main():
     # TODO
     # make ipv4_addr and interface require the other if one is provided
 
-    if module.params['host_hostname'] is '':
-        module.params['host_hostname'] == module.params['name']
+    if module.params['host_hostname']:
+        module.params['host_hostname'] = module.params['name']
 
     if get_platform() != 'FreeBSD':
         module.fail_json(msg='This module is only compatible with FreeBSD.')
