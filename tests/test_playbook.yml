@@ -1,4 +1,5 @@
 ---
+#TODO test to make sure hostname is set when not provided
 - hosts: 127.0.0.1
   become: true
   connection: local
