@@ -277,7 +277,7 @@ def main():
             host_hostname=dict(default=None, type='str'),
             exec_start=dict(default='/bin/sh /etc/rc', type='str'),
             exec_stop=dict(default='/bin/sh /etc/rc.shutdown', type='str'),
-            securelevel=dict(default=3, type='int', choices=[-1, 0, 1, 2, 3]),
+            securelevel=dict(default=0, type='int', choices=[-1, 0, 1, 2, 3]),
             mount_devfs=dict(default=True, type='bool'),
             other_config=dict(default={}, type='dict'),
             conf_file=dict(default='/etc/jail.conf', type='str'),
@@ -291,7 +291,7 @@ def main():
     # TODO
     # make ipv4_addr and interface require the other if one is provided
 
-    if module.params['host_hostname']:
+    if not module.params['host_hostname']:
         module.params['host_hostname'] = module.params['name']
 
     if get_platform() != 'FreeBSD':
