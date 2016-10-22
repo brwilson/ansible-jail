@@ -113,7 +113,7 @@ def test_jail_conf(module):
         return False
 
 
-def write_jail_conf(module):
+def set_jail_conf(module):
     """Set configuration for a jail.
 
     Args:
@@ -149,26 +149,12 @@ def write_jail_conf(module):
         module.fail_json(msg=msg)
 
 
-def get_rc_jail_enable(module):
-    """Get value of jail_enable rc variable.
-
-    Args:
-        module (AnsibleModule): the module object
-    Returns:
-        True if jail_enable is set to yes
-        False if jail_enable is set to no
-    """
-
-    cmd = '. /etc/rc.subr; load_rc_config jail_enable; checkyesno jail_enable'
-    rc, stdout, stderr = module.run_command(cmd, use_unsafe_shell=True)
-    if rc == 0:
-        return True
-    else:
-        return False
-
 
 def get_rc_jail_list(module):
-    """Get jails configured to start at boot.
+    """Get value of jail_list rc variable.
+
+    The jail_list rc variable is a space-delimited list of jails that
+    should be started when the host machine boots.
 
     Args:
         module (AnsibleModule): the module object
@@ -180,6 +166,29 @@ def get_rc_jail_list(module):
     rc, stdout, stderr = module.run_command(cmd, check_rc=True,
                                             use_unsafe_shell=True)
     return stdout.split()
+
+
+def test_rc_jail_list(module):
+    """Test if jail_list rc variable is set to correct value for jail state.
+
+    Args:
+        module (AnsibleModule): the module object
+    Returns:
+        True if jail_list is already set correctly
+        False if jail_list needs to be modified to match desired state
+    """
+    jail = module.params['name']
+    desired_state = module.params['state']
+
+    if jail in get_rc_jail_list(module):
+        current_state = 'present'
+    else:
+        current_state = 'absent'
+
+    if current_state == desired_state:
+        return True
+    else:
+        return False
 
 
 def add_rc_jail_list(module):
@@ -223,7 +232,7 @@ def remove_rc_jail_list(module):
 
 
 def write_rc_jail_list(module, jail_list):
-    """Modify the jail_list variable in the specified rc file.
+    """Write the jail_list variable in the specified rc file.
 
     Args:
         module (AnsibleModule): the module object
@@ -265,6 +274,26 @@ def write_rc_jail_list(module, jail_list):
     except IOError:
         msg = "Unable to open {} for writing.".format(module.params['rc_file'])
         module.fail_json(msg=msg)
+
+
+
+def get_rc_jail_enable(module):
+    """Get value of jail_enable rc variable.
+
+    Args:
+        module (AnsibleModule): the module object
+    Returns:
+        True if jail_enable is set to yes
+        False if jail_enable is set to no
+    """
+
+    cmd = '. /etc/rc.subr; load_rc_config jail_enable; checkyesno jail_enable'
+    rc, stdout, stderr = module.run_command(cmd, use_unsafe_shell=True)
+    if rc == 0:
+        return True
+    else:
+        return False
+
 
 
 def main():
@@ -317,7 +346,7 @@ def main():
     # Update config file
     if not test_jail_conf(module):
         result['changed'] = True
-        write_jail_conf(module)
+        set_jail_conf(module)
 
     # Set which jails are started at boot
     if module.params['name'] in get_rc_jail_list(module):
