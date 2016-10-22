@@ -26,13 +26,26 @@ def generate_jail_conf(module):
 
     params = {
         'path': module.params['path'],
+
         'ip4.addr': module.params['ip4_addr'],
         'interface': module.params['interface'],
         'host.hostname': module.params['host_hostname'],
+        'allow.set_hostname': module.params['allow_set_hostname'],
+
+        'exec.prestart': module.params['exec_prestart'],
         'exec.start': module.params['exec_start'],
+        'exec.poststart': module.params['exec_poststart'],
+        'exec.prestop': module.params['exec_prestop'],
         'exec.stop': module.params['exec_stop'],
+        'exec.poststop': module.params['exec_poststop'],
+
+        'mount.devfs': module.params['mount_devfs'],
+        'allow.mount': moudle.params['allow_mount'],
+        'allow.mount.zfs': moudle.params['allow_mount_zfs'],
+        'enforce_statfs': module.params['enforce_statfs'],
         'securelevel': module.params['securelevel'],
-        'mount.devfs': module.params['mount_devfs']
+
+        'children.max': module.params['children_max'],
     }
     params.update(module.params['other_config'])
 
@@ -300,25 +313,38 @@ def main():
     module = AnsibleModule(
         argument_spec=dict(
             name=dict(required=True, type='str'),
+
             path=dict(required=True, type='str'),
+
             ip4_addr=dict(default=None, type='str'),
             interface=dict(default=None, type='str'),
             host_hostname=dict(default=None, type='str'),
+            allow_set_hostname=dict(default=False, type='bool'),
+
+            exec_prestart=dict(default=None, type='str')
             exec_start=dict(default='/bin/sh /etc/rc', type='str'),
+            exec_poststart=dict(default=None, type='str')
+            exec_prestop=dict(default=None, type='str')
             exec_stop=dict(default='/bin/sh /etc/rc.shutdown', type='str'),
-            securelevel=dict(default=0, type='int', choices=[-1, 0, 1, 2, 3]),
+            exec_poststop=dict(default=None, type='str')
+
             mount_devfs=dict(default=True, type='bool'),
+            allow_mount=dict(default=False, type='bool'),
+            allow_mount_zfs=dict(default=False, type='bool'),
+            enforce_statfs=dict(default=2, type='int', choices=[0, 1, 2]),
+            securelevel=dict(default=0, type='int', choices=[-1, 0, 1, 2, 3]),
+
+            children_max=dict(default=0, type='int'),
+
             other_config=dict(default={}, type='dict'),
+
             conf_file=dict(default='/etc/jail.conf', type='str'),
             rc_file=dict(default='/etc/rc.conf', type='str'),
             enabled=dict(default=True, type='bool'),
             state=dict(default='present', type='str', choices=['present', 'absent'])
         ),
-        supports_check_mode=False
+        supports_check_mode=False,
     )
-
-    # TODO
-    # make ipv4_addr and interface require the other if one is provided
 
     if not module.params['host_hostname']:
         module.params['host_hostname'] = module.params['name']
@@ -333,7 +359,6 @@ def main():
         os.path.dirname(module.params['conf_file']),
         os.path.dirname(module.params['rc_file'])
     ]
-
     for d in dirpaths:
         try:
             if not os.path.exists(d):
